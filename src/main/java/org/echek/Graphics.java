@@ -39,6 +39,7 @@ public class Graphics {
     private JTextField controlCableMark;
     private JTextField controlCableDistance;
     private JTextField contactorField;
+    private JTextField fileHolderAddress;
     private JTextArea outputTextField;
     private JPanel bottomButtonsPanel;
     private JScrollPane output;
@@ -46,13 +47,15 @@ public class Graphics {
 
     private String[] voltage = {"", "220", "380"};
 
-    private ArrayList <Attachment> shield = new ArrayList<>(); // Массив присоединений - расчетный щит
+    public String addressFileHold;
+
+    ArrayList <Attachment> shield = new ArrayList<>(); // Массив присоединений - расчетный щит
     CircuitBreaker inputCircuitBreaker = new CircuitBreaker(); // Вводной автомат щита
     Cable inputCable = new Cable(); // Вводной кабель
     String shieldName; // Наименование щита
     String shieldLabelName; // Обозначение щита
 
-    private Attachment shieldAttachment = new Attachment(inputCircuitBreaker, inputCable, new Contactor(), new Cable(), new Cable(), new Consumer(), new ControlPost());
+    Attachment shieldAttachment = new Attachment(inputCircuitBreaker, inputCable, new Contactor(), new Cable(), new Cable(), new Consumer(), new ControlPost());
 
 
     void go() {
@@ -118,16 +121,19 @@ public class Graphics {
         cable2Mark.setEditable(false);
         cable2Mark.setBackground(Color.lightGray);
         tablePanel.add(addComponent(cable2Mark));
-        JTextArea controlPostLabel = new JTextArea("Пост управления" + "\n" + "марка" + "\n" + "Число кнопок");
+        JTextArea controlPostLabel = new JTextArea("Пост управления" + "\n" + "марка" + "\n" + "Число кнопок"); //#11
         controlPostLabel.setEditable(false);
         controlPostLabel.setBackground(Color.lightGray);
         tablePanel.add(addComponent(controlPostLabel));
-        JTextArea cableContrMark = new JTextArea(3,8); //#11
+        JTextArea cableContrMark = new JTextArea(3,8); //#12
         cableContrMark.setText("Марка и длина, м," + "\n" + "контрольного" + "\n" +  "кабеля");
         cableContrMark.setEditable(false);
         cableContrMark.setBackground(Color.lightGray);
         tablePanel.add(addComponent(cableContrMark));
-        tablePanel.add(emptyLabel); //#13
+        JTextArea fileHolder = new JTextArea("Место хранения " + "\n" + "выходного файла"); //#13
+        fileHolder.setEditable(false);
+        fileHolder.setBackground(Color.lightGray);
+        tablePanel.add(addComponent(fileHolder));
     }
 
     // Формирование панели ввода
@@ -169,6 +175,17 @@ public class Graphics {
         distanceInputCable.setFont(font);
         inputCablePanel.add(distanceInputCable);
         inputPanel.add(inputCablePanel);
+        JLabel emptyLabel5 = new JLabel();
+        inputPanel.add(emptyLabel5); //#6
+        JLabel emptyLabel6 = new JLabel();
+        inputPanel.add(emptyLabel6); //#6
+        JLabel emptyLabel7 = new JLabel();
+        inputPanel.add(emptyLabel7); //#6
+        JLabel emptyLabel8 = new JLabel();
+        inputPanel.add(emptyLabel8); //#6
+        fileHolderAddress = new JTextField("D:\\");
+        inputPanel.add(addComponent(fileHolderAddress));
+
     }
 
     // добавление присоединения
@@ -283,12 +300,18 @@ public class Graphics {
         frame.getContentPane().add(BorderLayout.CENTER, output);
 
         bottomButtonsPanel = new JPanel();
-        bottomButtonsPanel.setLayout(new GridLayout(2,1));
+        bottomButtonsPanel.setLayout(new GridLayout(3,1));
         frame.getContentPane().add(BorderLayout.SOUTH, bottomButtonsPanel);
         JButton calculateButton = new JButton("Произвести расчет");
         calculateButton.setFont(font);
         calculateButton.addActionListener(new Calculate());
         bottomButtonsPanel.add(calculateButton);
+        JButton xmlButton = new JButton("XML");
+        xmlButton.setFont(font);
+        xmlButton.addActionListener(e -> {
+            XMLBuilder.buildingXML(shieldAttachment, shield, addressFileHold);
+        });
+        bottomButtonsPanel.add(xmlButton);
         JButton clearAllButton = new JButton("Очистить все");
         clearAllButton.setFont(font);
         clearAllButton.addActionListener(new ClearAll());
@@ -327,8 +350,8 @@ public class Graphics {
                 shield.get(numberOfAttachment).getCable1().profileChoice(shield.get(numberOfAttachment), shield.get(numberOfAttachment).getCable1()));
         // Контактор или шкаф управления
         shield.get(numberOfAttachment).getContactor().setName(contactorField.getText());
-        shield.get(numberOfAttachment).getContactor().setCurrent(
-                shield.get(numberOfAttachment).getCircuitBreaker().getCurrent());
+        shield.get(numberOfAttachment).getContactor().setCurrent(Contactor.currentChoice(
+                shield.get(numberOfAttachment).getCircuitBreaker().getCurrent()));
         // Кабель-2
         shield.get(numberOfAttachment).getCable2().setName(shield.get(numberOfAttachment).getName() + "-н2");
         shield.get(numberOfAttachment).getCable2().setMark(cable2Mark.getText());
@@ -429,6 +452,9 @@ public class Graphics {
             inputCable.setMark(markInputCable.getText());
             inputCable.setDistance(Float.parseFloat(distanceInputCable.getText().replaceAll(",", ".")));
 
+            //адрес хранения файла с результатами
+            addressFileHold = fileHolderAddress.getText() + shieldLabelName + ".xml";
+
             // Расчеты
             shieldAttachment.getConsumer().setVoltage(380);
             shieldAttachment.getConsumer().setPower(Calculator.sumActivePowerCalc(shield));
@@ -436,10 +462,9 @@ public class Graphics {
             shieldAttachment.getConsumer().setRatioDemand(Calculator.ratioDemandCalc(shield));
             shieldAttachment.getConsumer().setCurrent(Calculator.currentCalc(shieldAttachment));
 
-            inputCircuitBreaker.setCurrent(inputCircuitBreaker.currentChoice(shieldAttachment));
+            inputCircuitBreaker.setCurrent(inputCircuitBreaker.inputCurrentChoice(shield, shieldAttachment));
             inputCircuitBreaker.setPole(inputCircuitBreaker.poleChoice(shieldAttachment));
             inputCircuitBreaker.setCharacter(inputCircuitBreaker.characterChoice(shieldAttachment));
-
             inputCable.setLines(inputCable.lineChoice(shieldAttachment));
             inputCable.setProfile(inputCable.profileChoice(shieldAttachment, inputCable));
 
@@ -455,6 +480,7 @@ public class Graphics {
                     inputCircuitBreaker.toString() +
                     inputCable.toString() + "\n" +
                     "Потеря напряжения до щита - " + String.format("%.3f", Calculator.deltaUCalc(shieldAttachment)) + "%");
+
         }
     }
 }

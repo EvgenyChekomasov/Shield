@@ -2,13 +2,13 @@ package org.echek;
 
 public class Contactor {
 
-    private String name;
+    private String name = "";
     private boolean isContactor = false;
     private boolean isShield = false;
     private boolean revers = false;
     private int current;
 
-    private int[] rowCurrent = {10, 16, 25, 40, 63, 100, 160, 250, 400, 630};
+    private static final int[] rowCurrent = {10, 16, 25, 40, 63, 100, 160, 250, 400, 630};
 
     public String getName() {
         return name;
@@ -50,7 +50,7 @@ public class Contactor {
         this.current = current;
     }
 
-    public int currentChoice(double currentCircuitBreaker) {
+    public static int currentChoice(double currentCircuitBreaker) {
         int nominal = rowCurrent[0];
         int i = 0;
         while (currentCircuitBreaker > (double) rowCurrent[i]) {

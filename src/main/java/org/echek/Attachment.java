@@ -88,8 +88,16 @@ public class Attachment {
         this.controlPost = controlPost;
     }
 
+    public double getDeltaU() {
+        return Calculator.deltaUCalc(this);
+    }
+
+    public double getCircuitCurrent() {
+        return Calculator.circuitCurrentCalc(this);
+    }
+
     public String checkParameters() {
-        return "Потеря напряжения - " + String.format("%.3f", Calculator.deltaUCalc(this)) + "%," +
-                "Однофазный ток КЗ -" + String.format("%.3f", Calculator.circuitCurrentCalc(this)) + " A";
+        return "Потеря напряжения - " + String.format("%.3f", getDeltaU()) + "%," +
+                "Однофазный ток КЗ - " + String.format("%.3f", getCircuitCurrent()) + " A";
     }
 }

@@ -1,5 +1,8 @@
 package org.echek;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 // Автоматический выключатель
 public class CircuitBreaker {
 
@@ -61,9 +64,27 @@ public class CircuitBreaker {
         return nominal;
     }
 
+    int inputCurrentChoice (ArrayList<Attachment> shield, Attachment shieldAttachment) {
+        int nominal = rowCurrent[0];
+        int i = 0;
+        while (shieldAttachment.getConsumer().getCurrent() * 1.15 > (double) rowCurrent[i]) {
+            i++;
+            nominal = rowCurrent[i];
+        }
+        for (Attachment attachment : shield) {
+            if (nominal <= attachment.getCircuitBreaker().getCurrent()) {
+                i = Arrays.binarySearch(rowCurrent, attachment.getCircuitBreaker().getCurrent());
+                nominal = rowCurrent[i + 1];
+            }
+        }
+        return nominal;
+    }
+
     String characterChoice(Attachment attachment) {
         String str = "";
-        if (Calculator.circuitCurrentCalc(attachment) / current < 5) {
+        if (differential) {
+            str = " А /30 мА";
+        } else if (Calculator.circuitCurrentCalc(attachment) / current < 5) {
             str = "B";
         } else {
             str = "C";
