@@ -15,13 +15,10 @@ import java.util.ArrayList;
 
 public class XMLBuilder {
     private static DocumentBuilderFactory factory;
-    private  static DocumentBuilder builder;
+    private static DocumentBuilder builder;
+    //static String tempAddress = "";
 
-    //ublic static void main(String[] args) {
-    //   buildingXML("D:\\aaaaa.xml");
-    //
-
-    public static void buildingXML(Attachment shieldAttachment, ArrayList<Attachment> shield, String address) {
+    public static void buildingXML(Attachment shieldAttachment, ArrayList<Attachment> shield) {
          factory = DocumentBuilderFactory.newInstance();
 
          try {
@@ -29,7 +26,7 @@ public class XMLBuilder {
              // создаем xml-файл
              Document document = builder.newDocument();
              // создаем корневой элемент
-             Element rootElement = document.createElementNS("org.echek.outxml/attachments", "Attachment");
+             Element rootElement = document.createElementNS("src\\main\\java\\resources\\AttachmentStyle.xsl", "Attachment");
              // и добавляем его в документ
              document.appendChild(rootElement);
 
@@ -47,14 +44,12 @@ public class XMLBuilder {
              DOMSource source = new DOMSource(document);
 
              // печать в консоль и файл
-             StreamResult console = new StreamResult(System.out);
-             StreamResult file = new StreamResult(address);
+             //StreamResult console = new StreamResult(System.out);
+             StreamResult file = new StreamResult("D:\\tempAttachment.xml");
 
              // запись данных
-             transformer.transform(source, console);
+             //transformer.transform(source, console);
              transformer.transform(source, file);
-
-             System.out.println("Создание завершено");
 
          } catch (Exception e) {
              e.printStackTrace();
@@ -106,13 +101,12 @@ public class XMLBuilder {
         attach.appendChild(getElement(document, "breaker_mark", attachment.getCircuitBreaker().getName()));
         attach.appendChild(getElement(document, "poles", attachment.getCircuitBreaker().getPole() + "P"));
         attach.appendChild(getElement(document, "breaker_current", attachment.getCircuitBreaker().getCurrent() + attachment.getCircuitBreaker().getCharacter()));
-        //attach.appendChild(getElement(document,attach, "character", attachment.getCircuitBreaker().getCharacter()));
 
         // данные по первому кабелю
         if (attachment.getCable1().getDistance() == 0) {
-            attach.appendChild(getElement(document, "cable1_name", ""));
-            attach.appendChild(getElement(document, "cable1_mark", ""));
-            attach.appendChild(getElement(document, "cable1_profile", ""));
+            attach.appendChild(getElement(document, "cable1_name", " "));
+            attach.appendChild(getElement(document, "cable1_mark", " "));
+            attach.appendChild(getElement(document, "cable1_profile", " "));
         } else {
             attach.appendChild(getElement(document, "cable1_name", attachment.getCable1().getName()));
             attach.appendChild(getElement(document, "cable1_mark", attachment.getCable1().getMark()));
@@ -121,8 +115,8 @@ public class XMLBuilder {
 
         // данные по контактору (ШУ)
         if (attachment.getContactor().getName().equals("марка") || attachment.getContactor().getName().equals("")) {
-            attach.appendChild(getElement(document, "contactor", ""));
-            attach.appendChild(getElement(document, "contactor_current", ""));
+            attach.appendChild(getElement(document, "contactor", " "));
+            attach.appendChild(getElement(document, "contactor_current", " "));
         } else {
             attach.appendChild(getElement(document, "contactor", attachment.getContactor().getName()));
             attach.appendChild(getElement(document, "contactor_current", Integer.toString(attachment.getContactor().getCurrent())));
@@ -130,9 +124,9 @@ public class XMLBuilder {
 
         // данные по второму кабелю
         if (attachment.getCable2().getDistance() == 0) {
-            attach.appendChild(getElement(document, "cable2_name", ""));
-            attach.appendChild(getElement(document, "cable2_mark", ""));
-            attach.appendChild(getElement(document, "cable2_profile", ""));
+            attach.appendChild(getElement(document, "cable2_name", " "));
+            attach.appendChild(getElement(document, "cable2_mark", " "));
+            attach.appendChild(getElement(document, "cable2_profile", " "));
         } else {
             attach.appendChild(getElement(document, "cable2_name", attachment.getCable2().getName()));
             attach.appendChild(getElement(document, "cable2_mark", attachment.getCable2().getMark()));
@@ -141,9 +135,9 @@ public class XMLBuilder {
 
         // данные по контрольному кабелю
         if (attachment.getCableControl().getDistance() == 0) {
-            attach.appendChild(getElement(document, "control_cable_name", ""));
-            attach.appendChild(getElement(document, "control_cable_mark", ""));
-            attach.appendChild(getElement(document, "control_cable_profile", ""));
+            attach.appendChild(getElement(document, "control_cable_name", " "));
+            attach.appendChild(getElement(document, "control_cable_mark", " "));
+            attach.appendChild(getElement(document, "control_cable_profile", " "));
 
         } else {
             attach.appendChild(getElement(document, "control_cable_name", attachment.getCableControl().getName()));
@@ -153,7 +147,7 @@ public class XMLBuilder {
 
         // данные по посту управления
         if (attachment.getControlPost().getNumButtons() == 0) {
-            attach.appendChild(getElement(document, "control_post", ""));
+            attach.appendChild(getElement(document, "control_post", " "));
         } else {
             attach.appendChild(getElement(document, "control_post", attachment.getControlPost().getName()));
         }

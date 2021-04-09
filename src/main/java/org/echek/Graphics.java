@@ -1,10 +1,14 @@
 package org.echek;
 
+import org.apache.fop.apps.FOPException;
+
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.xml.transform.TransformerException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Graphics {
@@ -309,7 +313,13 @@ public class Graphics {
         JButton xmlButton = new JButton("XML");
         xmlButton.setFont(font);
         xmlButton.addActionListener(e -> {
-            XMLBuilder.buildingXML(shieldAttachment, shield, addressFileHold);
+            XMLBuilder.buildingXML(shieldAttachment, shield);
+            PDFBuilder pdfBuilder = new PDFBuilder();
+            try {
+                pdfBuilder.convertToPDF(addressFileHold);
+            } catch (FOPException | IOException | TransformerException ex) {
+                ex.printStackTrace();
+            }
         });
         bottomButtonsPanel.add(xmlButton);
         JButton clearAllButton = new JButton("Очистить все");
@@ -447,13 +457,14 @@ public class Graphics {
             // Исходные данные по щиту
             shieldName = shieldNameField.getText();
             shieldLabelName = shieldLabel.getText();
+            shieldAttachment.getConsumer().setName(shieldName);
             inputCircuitBreaker.setName(inputBreakerMark.getText());
             inputCable.setName(shieldLabelName + "-н1");
             inputCable.setMark(markInputCable.getText());
             inputCable.setDistance(Float.parseFloat(distanceInputCable.getText().replaceAll(",", ".")));
 
             //адрес хранения файла с результатами
-            addressFileHold = fileHolderAddress.getText() + shieldLabelName + ".xml";
+            addressFileHold = fileHolderAddress.getText() + shieldLabelName + ".pdf";
 
             // Расчеты
             shieldAttachment.getConsumer().setVoltage(380);
